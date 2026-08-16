@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block passo %}Passo 0 — a função{% endblock %}
+
+{% block cabecalho %}
+<h1 class="enunciado surge" style="animation-delay:.1s">
+  Se <span class="de">f</span> é contínua em [<span class="de">a</span>, <span class="de">b</span>]<br>
+  e <span class="de">d</span> está entre <span class="de">f(a)</span> e <span class="de">f(b)</span>,<br>
+  então existe <span class="de">c</span>.
+</h1>
+<p class="legenda-topo surge" style="animation-delay:.16s">
+  Digite uma função. O programa sorteia dois pontos <b>a</b> e <b>b</b> e um valor <b>d</b>
+  entre <b>f(a)</b> e <b>f(b)</b> — e então acha o <b>c</b> pelo método da bisseção.
+</p>
+{% endblock %}
+
+{% block conteudo %}
+<div class="oficina">
+
+  <form class="prancha surge" action="{{ url_for('sorteio') }}" method="get" style="animation-delay:.22s; padding: clamp(1.4rem, 4vw, 2.4rem);">
+    {% if erro %}
+    <p class="aviso">{{ erro }}</p>
+    {% endif %}
+
+    <label class="campo-rotulo" for="f">A função</label>
+    <input class="campo" type="text" id="f" name="f" value="{{ funcao }}" maxlength="120"
+           autocomplete="off" spellcheck="false" required
+           aria-describedby="ajuda">
+    <p class="ajuda" id="ajuda">
+      Aceita <code>^</code> para potência e as funções <code>sin cos tan exp log ln sqrt abs</code>.
+    </p>
+
+    <div class="dominio">
+      <div>
+        <label class="campo-rotulo" for="x0">Domínio — início</label>
+        <input class="campo campo-curto" type="number" step="any" id="x0" name="x0" value="{{ x0 }}" required>
+      </div>
+      <div>
+        <label class="campo-rotulo" for="x1">Fim</label>
+        <input class="campo campo-curto" type="number" step="any" id="x1" name="x1" value="{{ x1 }}" required>
+      </div>
+    </div>
+
+    <button class="botao" type="submit" style="margin-top:1.6rem">Sortear os pontos</button>
+  </form>
+
+  <aside class="ficha surge" style="animation-delay:.28s">
+    <h2>Exemplos</h2>
+    <div class="corpo">
+      <p class="nota" style="margin-top:0; margin-bottom:1rem">
+        Clique para carregar no formulário.
+      </p>
+      {% for expressao, faixa in exemplos %}
+      {% set partes = faixa.split(' ') %}
+      <a class="exemplo" href="{{ url_for('inicio', f=expressao, x0=partes[0], x1=partes[1]) }}">
+        <span class="exemplo-f">{{ expressao }}</span>
+        <span class="exemplo-faixa">[{{ partes[0] }}, {{ partes[1] }}]</span>
+      </a>
+      {% endfor %}
+    </div>
+  </aside>
+
+</div>
+
+<style>
+.campo-rotulo { display: block; font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: var(--tinta-fraca); margin-bottom: .45rem; }
+.campo {
+  width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--tinta);
+  font-family: var(--mono); font-size: clamp(1.15rem, 2.8vw, 1.65rem); font-weight: 500;
+  color: var(--tinta); padding: .25rem 0 .45rem; outline: none;
+}
+.campo:focus { border-bottom-color: var(--vermelho); }
+.campo::placeholder { color: var(--regua); }
+.campo-curto { font-size: 1.1rem; }
+.ajuda { font-size: .76rem; color: var(--tinta-fraca); margin: .6rem 0 0; }
+.ajuda code { font-size: .95em; color: var(--tinta-media); }
+.dominio { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1.9rem; }
+.aviso { margin: 0 0 1.3rem; padding: .7rem .9rem; border-left: 3px solid var(--vermelho); background: rgba(191,58,43,.07); font-size: .82rem; color: var(--vermelho); }
+.exemplo { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding: .5rem 0; text-decoration: none; color: var(--tinta); border-top: 1px dotted rgba(23,19,15,.15); font-size: .82rem; }
+.exemplo:first-of-type { border-top: none; }
+.exemplo:hover .exemplo-f { color: var(--vermelho); }
+.exemplo-faixa { color: var(--tinta-fraca); font-size: .76rem; white-space: nowrap; }
+</style>
+{% endblock %}

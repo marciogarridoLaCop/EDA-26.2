@@ -1,0 +1,23 @@
+# Blueprint do Render.
+#
+# Este arquivo está na raiz do repositório, então dá para usar o fluxo direto:
+# New > Blueprint > escolher o repositório EDA-26.2. O Render lê tudo daqui e
+# não precisa de Root Directory nem de comandos preenchidos à mão.
+#
+services:
+  - type: web
+    name: tvi
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 60
+    healthCheckPath: /saude
+    envVars:
+      # o Render roda sem tela: o matplotlib precisa do backend sem janela
+      - key: MPLBACKEND
+        value: Agg
+      # o HOME do contêiner é somente leitura; o cache de fontes vai para /tmp
+      - key: MPLCONFIGDIR
+        value: /tmp/matplotlib
+      - key: PYTHON_VERSION
+        value: "3.12.12"

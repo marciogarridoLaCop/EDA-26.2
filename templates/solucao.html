@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block titulo %}c = {{ "%.6f"|format(c) }} — f(x) = {{ funcao.texto }}{% endblock %}
+{% block passo %}Passo 2 — o ponto c{% endblock %}
+
+{% block cabecalho %}
+<h1 class="enunciado surge" style="animation-delay:.1s">
+  <span class="de">c</span> = {{ "%.6f"|format(c) }}
+</h1>
+<p class="legenda-topo surge" style="animation-delay:.16s">
+  Para <b>f(x) = {{ expressao }}</b>, a bisseção fechou o intervalo em
+  <b>{{ resultado.iteracoes }}</b> passos até <b>f(c) = d</b>. O erro máximo em c
+  é a largura final do intervalo.
+</p>
+{% endblock %}
+
+{% block conteudo %}
+<div class="oficina">
+
+  <figure class="prancha surge" style="animation-delay:.22s; margin:0">
+    <div class="tela">
+      {{ desenho }}
+      {% if posicao %}
+      <span class="alvo" style="left:{{ '%.4f'|format(posicao.x * 100) }}%; top:{{ '%.4f'|format(posicao.y * 100) }}%"></span>
+      {% endif %}
+    </div>
+  </figure>
+
+  <aside class="ficha surge" style="animation-delay:.3s">
+    <h2>Encontrado</h2>
+    <div class="corpo">
+      <p class="grupo-titulo">Coordenada</p>
+      <div class="linha destaque"><span class="rotulo">c</span><span class="preencher"></span><span class="valor">{{ "%.9f"|format(c) }}</span></div>
+      <div class="linha destaque"><span class="rotulo">f(c)</span><span class="preencher"></span><span class="valor">{{ "%.9f"|format(cenario.d) }}</span></div>
+
+      <p class="grupo-titulo">Bisseção</p>
+      <div class="linha"><span class="rotulo">iterações</span><span class="preencher"></span><span class="valor">{{ resultado.iteracoes }}</span></div>
+      <div class="linha"><span class="rotulo">erro em c</span><span class="preencher"></span><span class="valor">{{ "%.2e"|format(resultado.erro) }}</span></div>
+      <div class="linha"><span class="rotulo">|f(c) − d|</span><span class="preencher"></span><span class="valor">{{ "%.2e"|format(residuo) }}</span></div>
+
+      <p class="grupo-titulo">Cenário</p>
+      <div class="linha"><span class="rotulo">a</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.a) }}</span></div>
+      <div class="linha"><span class="rotulo">b</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.b) }}</span></div>
+      <div class="linha"><span class="rotulo">d</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.d) }}</span></div>
+
+      <p class="nota">
+        Achar <em>c</em> com <em>f(c) = d</em> é achar a raiz de <em>g(x) = f(x) − d</em>.
+        Como <em>d</em> está entre <em>f(a)</em> e <em>f(b)</em>, então
+        <em>g(a)·g(b) &lt; 0</em> — a hipótese de Bolzano.
+      </p>
+
+      <div class="acoes">
+        <a class="botao" href="{{ link_outro }}">Sortear outro</a>
+      </div>
+    </div>
+  </aside>
+
+</div>
+{% endblock %}

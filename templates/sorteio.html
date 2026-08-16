@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}Sorteio — f(x) = {{ funcao.texto }}{% endblock %}
+{% block passo %}Passo 1 — o sorteio{% endblock %}
+
+{% block cabecalho %}
+<h1 class="enunciado surge" style="animation-delay:.1s">
+  <span class="de">f(x)</span> = {{ expressao }}
+</h1>
+<p class="legenda-topo surge" style="animation-delay:.16s">
+  A reta <b>y = d</b> atravessa a faixa entre <b>f(a)</b> e <b>f(b)</b>. Ela precisa cortar
+  a curva em algum lugar — o teorema garante. Falta descobrir onde.
+</p>
+{% endblock %}
+
+{% block conteudo %}
+<div class="oficina">
+
+  <figure class="prancha surge" style="animation-delay:.22s; margin:0">
+    <div class="tela">{{ desenho }}</div>
+  </figure>
+
+  <aside class="ficha surge" style="animation-delay:.3s">
+    <h2>Sorteado</h2>
+    <div class="corpo">
+      <p class="grupo-titulo">Extremos</p>
+      <div class="linha"><span class="rotulo">a</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.a) }}</span></div>
+      <div class="linha"><span class="rotulo">f(a)</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.fa) }}</span></div>
+      <div class="linha"><span class="rotulo">b</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.b) }}</span></div>
+      <div class="linha"><span class="rotulo">f(b)</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.fb) }}</span></div>
+
+      <p class="grupo-titulo">Valor procurado</p>
+      <div class="linha destaque"><span class="rotulo">d</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.d) }}</span></div>
+
+      <p class="nota">
+        Como <em>f</em> é contínua em [a, b] e <em>d</em> está entre <em>f(a)</em> e <em>f(b)</em>,
+        o TVI garante que existe <em>c</em> em (a, b) com <em>f(c) = d</em>.
+      </p>
+
+      <div class="acoes">
+        <a class="botao" href="{{ link_solucao }}">Revelar o ponto c</a>
+        <a class="botao-fantasma" href="{{ link_outro }}">Sortear outro</a>
+      </div>
+    </div>
+  </aside>
+
+</div>
+{% endblock %}
