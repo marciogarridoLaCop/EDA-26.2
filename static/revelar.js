@@ -67,7 +67,10 @@
       trocar(".ficha", dados.ficha);
       trocar(".trilha", dados.trilha ? extrairMiolo(dados.trilha) : null);
       if (dados.titulo) document.title = dados.titulo;
-      if (dados.url) history.pushState({ revelado: true }, "", dados.url);
+      // replaceState, não pushState: revelar o c é o mesmo passo, não um novo.
+      // Com pushState o voltar do navegador caía numa tela sem o ponto c, e o
+      // que é uma única etapa virava duas no histórico.
+      if (dados.url) history.replaceState({ revelado: true }, "", dados.url);
     } catch (erro) {
       location.href = gatilho.href; // qualquer tropeço vira navegação normal
       return;
@@ -77,6 +80,6 @@
     }
   });
 
-  // voltar pelo navegador precisa devolver a página do sorteio de verdade
-  addEventListener("popstate", () => location.reload());
+  // sem entrada nova no histórico, voltar sai direto para a página anterior de
+  // verdade — não há estado em memória para desfazer aqui.
 })();
