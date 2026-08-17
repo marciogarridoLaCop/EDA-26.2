@@ -1,0 +1,26 @@
+<h2>Encontrado</h2>
+<div class="corpo">
+  <p class="grupo-titulo">Coordenada</p>
+  <div class="linha destaque"><span class="rotulo">c</span><span class="preencher"></span><span class="valor">{{ "%.9f"|format(c) }}</span></div>
+  <div class="linha destaque"><span class="rotulo">f(c)</span><span class="preencher"></span><span class="valor">{{ "%.9f"|format(cenario.d) }}</span></div>
+
+  <p class="grupo-titulo">Convergência</p>
+  <div class="linha"><span class="rotulo">iterações</span><span class="preencher"></span><span class="valor">{{ resultado.iteracoes }}</span></div>
+  <div class="linha"><span class="rotulo">erro em c</span><span class="preencher"></span><span class="valor">{{ "%.2e"|format(resultado.erro) }}</span></div>
+  <div class="linha"><span class="rotulo">|f(c) − d|</span><span class="preencher"></span><span class="valor">{{ "%.2e"|format(residuo) }}</span></div>
+
+  <p class="grupo-titulo">Cenário</p>
+  <div class="linha"><span class="rotulo">a</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.a) }}</span></div>
+  <div class="linha"><span class="rotulo">b</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.b) }}</span></div>
+  <div class="linha"><span class="rotulo">d</span><span class="preencher"></span><span class="valor">{{ "%.6f"|format(cenario.d) }}</span></div>
+
+  <p class="nota">
+    Achar <em>c</em> com <em>f(c) = d</em> é o mesmo que achar a raiz de
+    <em>g(x) = f(x) − d</em>. Como <em>d</em> está entre <em>f(a)</em> e
+    <em>f(b)</em>, os valores <em>g(a)</em> e <em>g(b)</em> têm sinais opostos.
+  </p>
+
+  <div class="acoes">
+    <a class="botao" href="{{ link_outro }}">Sortear outro</a>
+  </div>
+</div>

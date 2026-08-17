@@ -18,7 +18,7 @@ import re
 
 import numpy as np
 import sympy as sp
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, render_template_string, request, url_for
 from markupsafe import Markup
 
 from bissecao import SemTrocaDeSinal, bissecao
@@ -199,19 +199,22 @@ def sorteio():
     )
 
 
-@app.route("/solucao")
-def solucao():
-    """Passo 2: roda o cálculo e mostra o ponto c."""
+def _resolver(args):
+    """Valida a URL e localiza o ponto c.
+
+    Devolve (contexto, None) quando dá certo e (None, redirect) quando não —
+    assim a página e a API compartilham exatamente as mesmas conferências.
+    """
     try:
-        funcao = _ler_funcao(request.args)
-        dominio = _ler_dominio(request.args)
+        funcao = _ler_funcao(args)
+        dominio = _ler_dominio(args)
     except (ExpressaoInvalida, EntradaInvalida) as erro:
-        return _voltar_com_erro(erro)
+        return None, _voltar_com_erro(erro)
 
     # nada que veio da URL é confiável: o cenário é reconferido contra a função
-    cenario = _cenario_da_url(funcao, request.args)
+    cenario = _cenario_da_url(funcao, args)
     if cenario is None:
-        return redirect(url_for("sorteio", **_parametros(funcao, dominio)))
+        return None, redirect(url_for("sorteio", **_parametros(funcao, dominio)))
 
     d = cenario.d
     try:
@@ -219,28 +222,61 @@ def solucao():
             lambda x: funcao(x) - d, cenario.a, cenario.b, tolerancia=TOLERANCIA
         )
     except SemTrocaDeSinal:
-        return redirect(url_for("sorteio", **_parametros(funcao, dominio)))
+        return None, redirect(url_for("sorteio", **_parametros(funcao, dominio)))
 
     c = resultado.raiz
     residuo = abs(funcao(c) - d)
     if residuo > RESIDUO_ACEITAVEL:
-        # a bisseção convergiu para uma descontinuidade, não para um c legítimo
-        return redirect(url_for("sorteio", **_parametros(funcao, dominio)))
+        # o cálculo convergiu para uma descontinuidade, não para um c legítimo
+        return None, redirect(url_for("sorteio", **_parametros(funcao, dominio)))
 
     desenho, posicao = svg(funcao, cenario, dominio, c=c)
-    return render_template(
-        "solucao.html",
-        funcao=funcao,
-        expressao=expressao_html(funcao.expr),
-        cenario=cenario,
-        resultado=resultado,
-        c=c,
-        residuo=residuo,
-        desenho=Markup(desenho),
-        posicao=posicao,
-        link_outro=url_for("sorteio", **_parametros(funcao, dominio)),
-        trilha=_trilha(2, funcao, dominio, cenario),
-    )
+    return {
+        "funcao": funcao,
+        "expressao": expressao_html(funcao.expr),
+        "cenario": cenario,
+        "resultado": resultado,
+        "c": c,
+        "residuo": residuo,
+        "desenho": Markup(desenho),
+        "posicao": posicao,
+        "link_outro": url_for("sorteio", **_parametros(funcao, dominio)),
+        "trilha": _trilha(2, funcao, dominio, cenario),
+        "url": url_for(
+            "solucao", **_parametros(funcao, dominio, a=cenario.a, b=cenario.b, d=cenario.d)
+        ),
+    }, None
+
+
+@app.route("/solucao")
+def solucao():
+    """Passo 2: roda o cálculo e mostra o ponto c."""
+    contexto, desvio = _resolver(request.args)
+    return desvio if contexto is None else render_template("solucao.html", **contexto)
+
+
+@app.route("/api/solucao")
+def api_solucao():
+    """Os mesmos pedaços da página, em JSON, para revelar o c sem recarregar.
+
+    Devolve marcação pronta em vez de números soltos: assim a página montada
+    pelo servidor e a montada pelo navegador saem do mesmo template, e não há
+    dois lugares para manter em sincronia.
+    """
+    contexto, desvio = _resolver(request.args)
+    if contexto is None:
+        return jsonify({"erro": "cenário inválido"}), 400
+
+    return jsonify({
+        "cabecalho": render_template("_solucao_cabecalho.html", **contexto),
+        "figura": render_template("_solucao_figura.html", **contexto),
+        "ficha": render_template("_solucao_ficha.html", **contexto),
+        "trilha": render_template("_trilha.html", **contexto),
+        "titulo": render_template_string(
+            "c = {{ '%.6f'|format(c) }} — f(x) = {{ funcao.texto }}", **contexto
+        ),
+        "url": contexto["url"],
+    })
 
 
 @app.route("/saude")

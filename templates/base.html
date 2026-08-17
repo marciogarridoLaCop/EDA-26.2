@@ -163,6 +163,11 @@ body {
 @media (prefers-reduced-motion: reduce) { .surge, .alvo { animation: none; } }
 
 a { color: var(--vermelho); text-underline-offset: .2em; }
+
+/* enquanto o ponto c é calculado, sem trocar de página */
+.prancha.calculando { opacity: .45; transition: opacity .18s ease; }
+.botao[aria-busy="true"] { pointer-events: none; opacity: .75; }
+.botao[aria-busy="true"]::after { content: "…"; }
 </style>
 </head>
 <body>
@@ -172,21 +177,15 @@ a { color: var(--vermelho); text-underline-offset: .2em; }
     <header>
       <div class="sobrancelha surge">
         <span>Teorema do Valor Intermediário</span>
-        <nav class="trilha" aria-label="Onde você está">
-          {% for etapa in trilha %}
-            {%- if not loop.first %}<span class="sep" aria-hidden="true">&rsaquo;</span>{% endif -%}
-            {%- if etapa.url %}<a href="{{ etapa.url }}">{{ etapa.rotulo }}</a>
-            {%- elif etapa.atual %}<span class="atual" aria-current="step">{{ etapa.rotulo }}</span>
-            {%- else %}<span class="mudo">{{ etapa.rotulo }}</span>{% endif -%}
-          {% endfor %}
-        </nav>
+        {% include "_trilha.html" %}
       </div>
       <div class="regua-dupla surge" style="animation-delay:.05s"></div>
-      {% block cabecalho %}{% endblock %}
+      <div class="cabecalho-pagina">{% block cabecalho %}{% endblock %}</div>
     </header>
 
     {% block conteudo %}{% endblock %}
   </main>
 </div>
+<script src="{{ url_for('static', filename='revelar.js') }}" defer></script>
 </body>
 </html>

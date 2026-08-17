@@ -1,0 +1,8 @@
+<nav class="trilha" aria-label="Onde você está">
+  {% for etapa in trilha %}
+    {%- if not loop.first %}<span class="sep" aria-hidden="true">&rsaquo;</span>{% endif -%}
+    {%- if etapa.url %}<a href="{{ etapa.url }}">{{ etapa.rotulo }}</a>
+    {%- elif etapa.atual %}<span class="atual" aria-current="step">{{ etapa.rotulo }}</span>
+    {%- else %}<span class="mudo">{{ etapa.rotulo }}</span>{% endif -%}
+  {% endfor %}
+</nav>

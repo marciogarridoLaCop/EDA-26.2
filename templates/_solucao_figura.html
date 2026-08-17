@@ -1,0 +1,6 @@
+<div class="tela">
+  {{ desenho }}
+  {% if posicao %}
+  <span class="alvo" style="left:{{ '%.4f'|format(posicao.x * 100) }}%; top:{{ '%.4f'|format(posicao.y * 100) }}%"></span>
+  {% endif %}
+</div>
