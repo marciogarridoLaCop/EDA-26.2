@@ -108,6 +108,47 @@ def _parametros(funcao: Funcao, dominio: tuple[float, float], **extras) -> dict:
     return base
 
 
+def _cenario_da_url(funcao: Funcao, args) -> Cenario | None:
+    """Reconstrói o cenário vindo da URL, ou None se ele não vier (ou não servir).
+
+    É o que permite voltar ao passo anterior sem sortear de novo — e, como tudo
+    é reconferido contra a função, um a/b/d adulterado é simplesmente ignorado.
+    """
+    if not all(args.get(nome) for nome in ("a", "b", "d")):
+        return None
+    try:
+        a = _float("a", args.get("a"))
+        b = _float("b", args.get("b"))
+        d = _float("d", args.get("d"))
+    except EntradaInvalida:
+        return None
+
+    fa, fb = funcao(a), funcao(b)
+    menor, maior = sorted((fa, fb))
+    if not (a < b and np.isfinite(fa) and np.isfinite(fb) and menor < d < maior):
+        return None
+    return Cenario(a=a, fa=fa, b=b, fb=fb, d=d)
+
+
+def _trilha(passo: int, funcao: Funcao | None = None, dominio=None, cenario=None) -> list[dict]:
+    """As migalhas de navegação: passos já percorridos viram links."""
+    etapas = [{"rotulo": "Função", "url": None}, {"rotulo": "Sorteio", "url": None},
+              {"rotulo": "Ponto c", "url": None}]
+
+    if funcao is not None and dominio is not None:
+        base = _parametros(funcao, dominio)
+        if passo >= 1:
+            etapas[0]["url"] = url_for("inicio", **base)
+        if passo >= 2 and cenario is not None:
+            etapas[1]["url"] = url_for(
+                "sorteio", **_parametros(funcao, dominio, a=cenario.a, b=cenario.b, d=cenario.d)
+            )
+
+    for indice, etapa in enumerate(etapas):
+        etapa["atual"] = indice == passo
+    return etapas
+
+
 def _voltar_com_erro(erro: object):
     """Devolve ao formulário preservando o que a pessoa já tinha digitado."""
     campos = {chave: valor for chave, valor in request.args.items() if chave != "erro"}
@@ -125,6 +166,7 @@ def inicio():
         x1=request.args.get("x1", DOMINIO_PADRAO[1]),
         exemplos=EXEMPLOS,
         erro=request.args.get("erro"),
+        trilha=_trilha(0),
     )
 
 
@@ -134,8 +176,10 @@ def sorteio():
     try:
         funcao = _ler_funcao(request.args)
         dominio = _ler_dominio(request.args)
-        rng = np.random.default_rng(_ler_semente(request.args))
-        cenario = sortear_cenario(funcao, dominio, rng)
+        cenario = _cenario_da_url(funcao, request.args)
+        if cenario is None:
+            rng = np.random.default_rng(_ler_semente(request.args))
+            cenario = sortear_cenario(funcao, dominio, rng)
     except (ExpressaoInvalida, EntradaInvalida, SorteioImpossivel, ValueError) as erro:
         return _voltar_com_erro(erro)
 
@@ -151,30 +195,29 @@ def sorteio():
             "solucao", **_parametros(funcao, dominio, a=cenario.a, b=cenario.b, d=cenario.d)
         ),
         link_outro=url_for("sorteio", **_parametros(funcao, dominio)),
+        trilha=_trilha(1, funcao, dominio, cenario),
     )
 
 
 @app.route("/solucao")
 def solucao():
-    """Passo 2: roda a bisseção e mostra o ponto c."""
+    """Passo 2: roda o cálculo e mostra o ponto c."""
     try:
         funcao = _ler_funcao(request.args)
         dominio = _ler_dominio(request.args)
-        a = _float("a", request.args.get("a"))
-        b = _float("b", request.args.get("b"))
-        d = _float("d", request.args.get("d"))
     except (ExpressaoInvalida, EntradaInvalida) as erro:
         return _voltar_com_erro(erro)
 
     # nada que veio da URL é confiável: o cenário é reconferido contra a função
-    fa, fb = funcao(a), funcao(b)
-    menor, maior = sorted((fa, fb))
-    if not (a < b and np.isfinite(fa) and np.isfinite(fb) and menor < d < maior):
+    cenario = _cenario_da_url(funcao, request.args)
+    if cenario is None:
         return redirect(url_for("sorteio", **_parametros(funcao, dominio)))
 
-    cenario = Cenario(a=a, fa=fa, b=b, fb=fb, d=d)
+    d = cenario.d
     try:
-        resultado = bissecao(lambda x: funcao(x) - d, a, b, tolerancia=TOLERANCIA)
+        resultado = bissecao(
+            lambda x: funcao(x) - d, cenario.a, cenario.b, tolerancia=TOLERANCIA
+        )
     except SemTrocaDeSinal:
         return redirect(url_for("sorteio", **_parametros(funcao, dominio)))
 
@@ -196,6 +239,7 @@ def solucao():
         desenho=Markup(desenho),
         posicao=posicao,
         link_outro=url_for("sorteio", **_parametros(funcao, dominio)),
+        trilha=_trilha(2, funcao, dominio, cenario),
     )
 
 

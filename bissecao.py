@@ -63,7 +63,7 @@ def bissecao(
         return Resultado(b, 0.0, 0, 0.0, True)
     if ga * gb > 0.0:
         raise SemTrocaDeSinal(
-            "Não há troca de sinal em [a, b]: a bisseção não se aplica nesse intervalo."
+            "Não há troca de sinal em [a, b]: o método não se aplica nesse intervalo."
         )
 
     esquerda, direita = a, b

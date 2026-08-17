@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block titulo %}Teorema do Valor Intermediário{% endblock %}</title>
-<meta name="description" content="Sorteia a, b e d numa função e encontra o ponto c com f(c) = d pelo método da bisseção.">
+<meta name="description" content="Sorteia a, b e d numa função contínua e localiza o ponto c com f(c) = d.">
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon-180.png') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -38,7 +40,7 @@ body {
   color: var(--tinta);
   font-family: var(--mono);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -49,25 +51,39 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)' opacity='.28'/%3E%3C/svg%3E");
 }
 
-.folha { max-width: 1240px; min-height: 100vh; margin: 0 auto; display: flex; flex-direction: column; padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1.1rem, 4vw, 2.5rem) 3rem; }
+.folha {
+  max-width: 1240px; min-height: 100vh; margin: 0 auto;
+  display: flex; flex-direction: column;
+  padding: clamp(1rem, 2.5vw, 1.9rem) clamp(1.1rem, 4vw, 2.5rem);
+}
+/* margem automática centra na vertical quando sobra espaço e some quando falta —
+   ao contrário de justify-content:center, que corta o topo do conteúdo alto */
+.folha > main { margin-block: auto; width: 100%; }
 
-/* ───────────────────────────── cabeçalho ───────────────────────────── */
+/* ───────────────────────── cabeçalho e trilha ───────────────────────── */
 
 .sobrancelha {
   display: flex; align-items: baseline; justify-content: space-between;
-  flex-wrap: wrap; gap: .75rem;
-  font-size: .69rem; letter-spacing: .22em; text-transform: uppercase;
+  flex-wrap: wrap; gap: .6rem 1.5rem;
+  font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
   color: var(--tinta-fraca);
 }
-.sobrancelha b { color: var(--vermelho); font-weight: 600; }
 
-.regua-dupla { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--tinta); height: 4px; margin: .7rem 0 1.6rem; }
+.trilha { display: flex; align-items: baseline; flex-wrap: wrap; gap: .1rem; }
+.trilha a, .trilha > span { padding: .15rem .1rem; }
+.trilha a { color: var(--tinta-media); text-decoration: none; border-bottom: 1px solid transparent; }
+.trilha a:hover { color: var(--vermelho); border-bottom-color: var(--vermelho); }
+.trilha .atual { color: var(--vermelho); font-weight: 600; }
+.trilha .mudo { color: var(--regua); }
+.trilha .sep { color: var(--regua); padding: 0 .45rem; }
+
+.regua-dupla { border-top: 2px solid var(--tinta); border-bottom: 1px solid var(--tinta); height: 4px; margin: .6rem 0 1.1rem; }
 
 .enunciado {
   font-family: var(--display);
   font-weight: 500;
-  font-size: clamp(2.1rem, 6vw, 3.9rem);
-  line-height: 1.04;
+  font-size: clamp(1.9rem, 4.2vw, 2.9rem);
+  line-height: 1.06;
   letter-spacing: -.015em;
   margin: 0;
   font-variant-numeric: lining-nums;
@@ -75,11 +91,11 @@ body {
 .enunciado .de { font-style: italic; color: var(--tinta-media); }
 .enunciado sup { font-size: .48em; vertical-align: super; line-height: 0; }
 
-.legenda-topo { margin: .85rem 0 0; max-width: 62ch; color: var(--tinta-media); font-size: .875rem; }
+.legenda-topo { margin: .6rem 0 0; max-width: 70ch; color: var(--tinta-media); font-size: .84rem; }
 
 /* ───────────────────────────── oficina ───────────────────────────── */
 
-.oficina { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: clamp(1.25rem, 3vw, 2.25rem); margin-top: clamp(1.5rem, 4vw, 2.5rem); align-items: start; }
+.oficina { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: clamp(1rem, 2.2vw, 1.6rem); margin-top: clamp(.9rem, 2vw, 1.4rem); align-items: start; }
 @media (max-width: 940px) { .oficina { grid-template-columns: minmax(0, 1fr); } }
 
 .prancha {
@@ -107,31 +123,31 @@ body {
 /* ───────────────────────────── ficha ───────────────────────────── */
 
 .ficha { border: 1px solid var(--tinta); background: rgba(252,252,251,.55); }
-.ficha h2 { margin: 0; padding: .7rem 1rem; font-family: var(--mono); font-size: .68rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; border-bottom: 1px solid var(--tinta); background: var(--tinta); color: var(--papel); }
-.ficha .corpo { padding: 1rem 1rem 1.15rem; }
+.ficha h2 { margin: 0; padding: .55rem .9rem; font-family: var(--mono); font-size: .66rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; border-bottom: 1px solid var(--tinta); background: var(--tinta); color: var(--papel); }
+.ficha .corpo { padding: .8rem .9rem .95rem; }
 
-.linha { display: flex; align-items: baseline; gap: .5rem; padding: .3rem 0; font-size: .85rem; }
+.linha { display: flex; align-items: baseline; gap: .5rem; padding: .22rem 0; font-size: .82rem; }
 .linha + .linha { border-top: 1px dotted rgba(23,19,15,.13); }
 .linha .rotulo { color: var(--tinta-media); white-space: nowrap; }
 .linha .preencher { flex: 1 1 auto; }
 .linha .valor { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
 .linha.destaque .rotulo, .linha.destaque .valor { color: var(--vermelho); font-weight: 600; }
 
-.grupo-titulo { margin: 1.1rem 0 .35rem; font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; color: var(--tinta-fraca); }
+.grupo-titulo { margin: .85rem 0 .25rem; font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--tinta-fraca); }
 .grupo-titulo:first-child { margin-top: 0; }
 
-.nota { font-size: .78rem; line-height: 1.55; color: var(--tinta-media); border-left: 2px solid var(--regua); padding-left: .8rem; margin: 1.1rem 0 0; }
+.nota { font-size: .76rem; line-height: 1.5; color: var(--tinta-media); border-left: 2px solid var(--regua); padding-left: .75rem; margin: .9rem 0 0; }
 .nota em { font-family: var(--display); font-style: italic; font-size: 1.05em; }
 
 /* ───────────────────────────── ações ───────────────────────────── */
 
-.acoes { display: flex; flex-direction: column; gap: .55rem; margin-top: 1.2rem; }
+.acoes { display: flex; flex-direction: column; gap: .5rem; margin-top: 1rem; }
 
 .botao, .botao-fantasma {
   display: block; width: 100%; text-align: center; cursor: pointer;
-  font-family: var(--mono); font-size: .74rem; font-weight: 600;
+  font-family: var(--mono); font-size: .72rem; font-weight: 600;
   letter-spacing: .16em; text-transform: uppercase; text-decoration: none;
-  padding: .85rem 1rem; border: 1px solid var(--tinta);
+  padding: .75rem 1rem; border: 1px solid var(--tinta);
   transition: transform .14s ease, box-shadow .14s ease, background-color .14s ease, color .14s ease;
 }
 .botao { background: var(--vermelho); border-color: var(--vermelho); color: #fdf8f2; box-shadow: 3px 3px 0 var(--tinta); }
@@ -139,11 +155,6 @@ body {
 .botao:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--tinta); }
 .botao-fantasma { background: transparent; color: var(--tinta); }
 .botao-fantasma:hover { background: var(--tinta); color: var(--papel); }
-
-/* ───────────────────────────── rodapé ───────────────────────────── */
-
-.rodape { margin-top: auto; padding-top: 2.5rem; border-top: 1px solid var(--regua); display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--tinta-fraca); }
-.rodape a { color: var(--tinta-media); }
 
 /* ───────────────────────────── entrada ───────────────────────────── */
 
@@ -157,22 +168,25 @@ a { color: var(--vermelho); text-underline-offset: .2em; }
 <body>
 <div class="grao" aria-hidden="true"></div>
 <div class="folha">
+  <main>
+    <header>
+      <div class="sobrancelha surge">
+        <span>Teorema do Valor Intermediário</span>
+        <nav class="trilha" aria-label="Onde você está">
+          {% for etapa in trilha %}
+            {%- if not loop.first %}<span class="sep" aria-hidden="true">&rsaquo;</span>{% endif -%}
+            {%- if etapa.url %}<a href="{{ etapa.url }}">{{ etapa.rotulo }}</a>
+            {%- elif etapa.atual %}<span class="atual" aria-current="step">{{ etapa.rotulo }}</span>
+            {%- else %}<span class="mudo">{{ etapa.rotulo }}</span>{% endif -%}
+          {% endfor %}
+        </nav>
+      </div>
+      <div class="regua-dupla surge" style="animation-delay:.05s"></div>
+      {% block cabecalho %}{% endblock %}
+    </header>
 
-  <header>
-    <div class="sobrancelha surge">
-      <span>Teorema do Valor Intermediário</span>
-      <span><b>{% block passo %}{% endblock %}</b></span>
-    </div>
-    <div class="regua-dupla surge" style="animation-delay:.05s"></div>
-    {% block cabecalho %}{% endblock %}
-  </header>
-
-  {% block conteudo %}{% endblock %}
-
-  <footer class="rodape">
-    <span>Método da bisseção · Bolzano</span>
-    <span><a href="{{ url_for('inicio') }}">Trocar a função</a></span>
-  </footer>
+    {% block conteudo %}{% endblock %}
+  </main>
 </div>
 </body>
 </html>

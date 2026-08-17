@@ -2,7 +2,7 @@
 
 O programa segue três passos:
     1. sorteia a, b e o valor d, e abre o gráfico com esses pontos;
-    2. quando você fecha a janela, roda a bisseção;
+    2. quando você fecha a janela, roda o cálculo;
     3. abre o gráfico de novo, agora com a seta apontando para o ponto c.
 
 Uso rápido:
@@ -42,7 +42,7 @@ def analisar_argumentos(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("-s", "--semente", type=int, help="semente aleatória (torna o sorteio reprodutível)")
     parser.add_argument("-t", "--tolerancia", type=float, default=1e-12, help="erro máximo em c (padrão: 1e-12)")
-    parser.add_argument("--tabela", action="store_true", help="mostra a tabela de convergência da bisseção")
+    parser.add_argument("--tabela", action="store_true", help="mostra a tabela de convergência")
     parser.add_argument(
         "--salvar", metavar="PREFIXO", nargs="?", const="tvi",
         help="também salva as figuras como PREFIXO_sorteio.png e PREFIXO_solucao.png",
@@ -74,11 +74,11 @@ def imprimir_sorteio(f: Funcao, cenario: Cenario) -> None:
 
 def imprimir_resultado(f: Funcao, cenario: Cenario, c: float, resultado, mostrar_tabela: bool) -> None:
     if mostrar_tabela:
-        print("  Bisseção em g(x) = f(x) - d:")
+        print("  Convergência em g(x) = f(x) - d:")
         print(formatar_tabela(resultado.historico, ultimas=12))
         print()
 
-    print(f"  Resultado após {resultado.iteracoes} iterações da bisseção:")
+    print(f"  Resultado após {resultado.iteracoes} iterações:")
     print()
     print(f"    ► c = ({c:.6f}, {cenario.d:.6f})")
     print()
@@ -150,7 +150,7 @@ def main(argv: list[str] | None = None) -> int:
         c = resultado.raiz
         if abs(f(c) - cenario.d) > RESIDUO_ACEITAVEL:
             # a bisseção convergiu para um salto da função, não para um c legítimo
-            print("  A bisseção caiu numa descontinuidade. Sorteando outro cenário...\n")
+            print("  O cálculo caiu numa descontinuidade. Sorteando outro cenário...\n")
             continue
 
         # ── passo 3: a resposta ─────────────────────────────────────────────

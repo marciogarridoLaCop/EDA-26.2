@@ -35,6 +35,9 @@ DESTAQUE = "#e34948"
 GRADE = "#e3e3e0"
 
 TAMANHO = (10.0, 6.5)
+# a web mostra o gráfico e a ficha lado a lado, e a página inteira precisa caber
+# numa tela sem rolagem — daí a proporção mais baixa que a das janelas
+TAMANHO_WEB = (10.0, 5.2)
 
 
 def _limites_y(ys_intervalo: np.ndarray, obrigatorios: list[float]) -> tuple[float, float]:
@@ -221,7 +224,7 @@ def svg(
     cenario: Cenario,
     dominio: tuple[float, float],
     c: float | None = None,
-    tamanho: tuple[float, float] = TAMANHO,
+    tamanho: tuple[float, float] = TAMANHO_WEB,
 ) -> tuple[str, dict[str, float] | None]:
     """Devolve (svg, posição de c). O SVG vem sem width/height, para escalar sozinho."""
     fig = Figure(figsize=tamanho, facecolor=SUPERFICIE)
